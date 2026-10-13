@@ -1,0 +1,37 @@
+# Environments
+.venv/
+venv/
+
+# Security
+.env
+.env.*
+!.env.example
+.kaggle.json
+kaggle.json
+.kaggle/
+profiles.yml
+*.pem
+*.p8
+*.key
+
+# Data 
+olist_raw_data/
+*.csv
+*.json
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# dbt generated files (including runs started from the project root)
+target/
+logs/
+dbt_packages/
+dbt_internal_packages/
+
+# Local operating-system and test artifacts
+.DS_Store
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/

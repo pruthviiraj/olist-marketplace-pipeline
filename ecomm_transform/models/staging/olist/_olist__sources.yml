@@ -1,0 +1,130 @@
+version: 2
+
+sources:
+  - name: olist_bronze
+    description: Raw Olist e-commerce data stored in Snowflake Bronzr, loaded from files staged in Azure Data Lake.
+    database: ecomm_db
+    schema: bronze
+
+    tables:
+      - name: products
+        description: Raw Olist product catalog. One row represents one product.
+        columns:
+          - name: product_id
+            description: Unique identifier for a product catalog record.
+            data_tests:
+              - not_null
+              - unique
+
+      - name: product_category_name_translation
+        description: Protuguese-to-english product-category translation mapping. 
+        columns:
+          - name: product_category_name
+            description: Portuguese product-category identifier.
+            data_tests:
+              - not_null
+              - unique
+
+      - name: customers
+        description: Raw Olist customer and delivery-location data. One row represents a customer record associated with an order.
+        columns:
+          - name: customer_id
+            description: Unique identifier for a customer record associated with an order.
+            data_tests:
+              - not_null
+              - unique
+          
+          - name: customer_unique_id
+            description: Identifier for the underlying customer. It can appear across multiple orders.
+            data_tests:
+              - not_null
+
+          - name: customer_zip_code_prefix
+            description: Customers delivery ZIP-code prefix, stored as text to preserve leading zeros.
+            data_tests:
+              - not_null
+
+          - name: customer_city
+            description: Customer delivery city name. 
+            data_tests:
+              - not_null
+          
+          - name: customer_state
+            description: Customer delivery state code. 
+            data_tests:
+              - not_null
+
+      - name: sellers
+        description: Raw Olist Seller and seller-location data. One row represents one seller.
+        columns:
+          - name: seller_id
+            description: Unique identifier for a seller.
+            data_tests:
+              - not_null
+              - unique
+          - name: seller_zip_code_prefix
+            description: Five-digit ZIP-code prefix associated with the seller.
+            data_tests:
+              - not_null
+          
+          - name: seller_city
+            description: City associated with the seller.
+            data_tests:
+              - not_null
+
+          - name: seller_state
+            description: Tow-letter Brazilian state code associated with the seller.
+            data_tests:
+              - not_null
+      - name: orders
+        description: Raw Olist order lifecycle data. One row represents one order. Data covers purchases from 2016-09-04 through 2018-10-17
+        columns:
+          - name: order_id
+            description: Unique identifier for an order.
+            data_tests:
+              - not_null
+              - unique
+
+          - name: customer_id
+            description: Identifier linking the order to its customer record.
+            data_tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('olist_bronze', 'customers')
+                    field: customer_id
+
+          - name: order_status
+            description: Current lifecycle status of the order.
+            data_tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values:
+                      - approved
+                      - canceled
+                      - created
+                      - delivered
+                      - invoiced
+                      - processing
+                      - shipped
+                      - unavailable
+          
+          - name: order_purchase_timestamp
+            description: Timestamp when the customer placed the order.
+            data_tests:
+              - not_null
+
+          - name: order_approved_at
+            description: Timestamp when the payment was approved. Can be null for orders not approved.
+          
+          - name: order_delivered_carrier_date
+            description: Timestamp when the order was handed to the carrier. Can be null for incomplete or canceled orders.
+
+          - name: order_estimated_customer_date
+            description: Timestamp when the order was delivered to the customer. Can be null for orders not delivered.
+          
+          - name: order_estimated_delivery_date
+            description: Estimated customer delivery timestamp.
+            data_tests:
+              - not_null
