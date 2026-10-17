@@ -226,9 +226,96 @@ models:
         description: payment amount in Brazilian reais.
         data_tests:
           - not_null
+  - name: stg_olist__reviews
+    description: Cleaned Olist customer reviews in the silver layer. One row represents one review-order pair.
 
+    columns:
+      - name: review_key
+        description: Composite key made from review_id and order_id.
+        data_tests:
+          - not_null
+          - unique
 
+      - name: review_id
+        description: Raw review identifier. It is not unique by itself in this dataset.
+        data_tests:
+          - not_null
 
+      - name: order_id
+        description: Identifier of the reviewed order.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_olist__orders')
+                field: order_id
+
+      - name: review_score
+        description: Customer rating from one to five.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1,2,3,4,5]
+
+      - name: review_comment_title
+        description: Optional customer review title. Blank values are converted to null.
+
+      - name: review_comment_message
+        description: Optional customer review message. Blank values are converted to null.
+
+      - name: review_comment_date
+        description: Timestamp when the review was created.
+
+      - name: review_comment_timestamp
+        description: Timestamp when the seller answered the review.
+
+  - name: stg_olist__review_enrichment
+    description: AI-enriched review sample in the silver layer. One row represents one review-order pair.
+
+    columns:
+      - name: review_key
+        description: Composite key made from review_id and order_id.
+        data_tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('stg_olist__reviews')
+                field: review_key
+
+      - name: review_id
+        description: Raw review identifier.
+        data_tests:
+          - not_null
+
+      - name: order_id
+        description: Identifier of the reviewed order.
+        data_tests:
+          - not_null
+
+      - name: review_score
+        description: Customer rating from one to five.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+
+      - name: english_translation
+        description: AI-generated English translation of the Portuguese review message.
+
+      - name: review_comment_title
+        description: Optional original review title.
+
+      - name: review_comment_message
+        description: Optional original review message.
+
+      - name: review_creation_date
+        description: Timestamp when the review was created.
+
+      - name: review_answer_timestamp
+        description: Timestamp when the seller answered the review.
 
 
 

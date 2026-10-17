@@ -168,3 +168,48 @@ sources:
             description: Amount paid in Brazilian reais.
             data_tests:
               - not_null
+
+      - name: order_reviews
+        description: Raw Olist customer reviews. One row represents one review associated with an order.
+        columns:
+          - name: review_id
+            description: Review identifier. It may  appear more than once across the raw dataset.
+            data_tests:
+              - not_null
+
+          - name: order_id
+            description: Identifier of the order being reviewed.
+            data_tests:
+              - not_null
+
+          - name: review_score
+            description: Customer rating from one to five.
+            data_tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: [1,2,3,4,5]
+
+      - name: order_reviews_ai_enrichment_sample
+        description: Sample of Olist reviews enriched with AI-generated English translations.
+        columns:
+          - name: review_id
+            description: Raw review identifier.
+            data_tests:
+              - not_null
+
+          - name: order_id
+            description: Identifier of the reviewed order.
+            data_tests:
+              - not_null
+
+          - name: review_score
+            description: Customer rating from one to five.
+            data_tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: [1, 2, 3, 4, 5]
+
+          - name: english_translation
+            description: AI-generated English translation of the Portuguese review message.

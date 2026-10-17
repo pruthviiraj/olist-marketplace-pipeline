@@ -148,7 +148,6 @@ ON_ERROR = 'CONTINUE';
 -- ==========================================
 -- 7. ORDER REVIEWS TABLE
 -- Complete raw customer-satisfaction dataset from Kaggle. The original file has 7 columns.
--- AI-enriched sample: original review fields plus English translation
 -- ==========================================
 CREATE OR REPLACE TABLE order_reviews (
     review_id STRING,
@@ -165,7 +164,7 @@ FROM @my_azure_stage/olist_order_reviews_dataset.csv
 FILE_FORMAT = csv_raw_format
 ON_ERROR = 'ABORT_STATEMENT';
 
--- AI-enriched sample: orginal review fields plus English translation
+-- AI-enriched sample: original review fields plus English translation
 CREATE OR REPLACE TABLE order_reviews_ai_enrichment_sample (
     review_id STRING,
     order_id STRING,
