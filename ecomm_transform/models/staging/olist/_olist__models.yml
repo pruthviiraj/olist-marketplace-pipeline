@@ -31,22 +31,22 @@ models:
         data_tests:
           - not_null
           - unique
-      
+
       - name: customer_unique_id
         description: Identifier for the underlying customer across multiple orders.
         data_tests:
           - not_null
-        
+
       - name: customer_zip_code_prefix
         description: Five-character delivery ZIP code prefix, retained as text.
         data_tests:
           - not_null
 
       - name: customer_city
-        description: Customer delivery city. 
+        description: Customer delivery city.
         data_tests:
           - not_null
-      
+
       - name: customer_state
         description: Uppercase Brazilian federative-unit code.
         data_tests:
@@ -63,12 +63,12 @@ models:
         data_tests:
           - not_null
           - unique
-      
+
       - name: seller_zip_code_prefix
         description: Five-digit ZIP-code prefix associated with the seller.
         data_tests:
           - not_null
-      
+
       - name: seller_city
         description: City associated with the seller.
         data_tests:
@@ -81,7 +81,7 @@ models:
           - accepted_values:
               arguments:
                 values: ["AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO", "MA", "MG", "MS", "MT", "PA", "PB", "PE", "PI", "PR", "RJ", "RN", "RO", "RR", "RS", "SC", "SE", "SP", "TO"]
-  
+
   - name: stg_olist__orders
     description: Cleaned Olist order lifecycle data in the silver layer. One row represents one order.
 
@@ -100,7 +100,7 @@ models:
               arguments:
                 to: ref('stg_olist__customers')
                 field: customer_id
-      
+
       - name: order_status
         description: Standardized lifecycle status of the order.
         data_tests:
@@ -116,12 +116,12 @@ models:
                   - processing
                   - shipped
                   - unavailable
-      
+
       - name: order_purchase_timestamp
         description: Timestamp when the customer placed the order.
         data_tests:
           - not_null
-      
+
       - name: order_approved_at
         description: Timestamp when the payment was approved. Can be null for unapproved orders.
 
@@ -130,17 +130,192 @@ models:
 
       - name: order_delivered_customer_date
         description: Timestamp when the order reached the customer. Can be null for orders not delivered.
-      
+
       - name: order_estimated_delivery_date
         description: Estimated delivery timestamp.
         data_tests:
           - not_null
 
+  - name: stg_olist__order_items
+    description: Cleaned olist order-line data in the silver layer. One row represents one item with an order.
 
+    columns:
+      - name: order_item_key
+        description: Derived unique key formed from order_id and order_item_id.
+        data_tests:
+          - not_null
+          - unique
 
+      - name: order_id
+        description: Identifier of the order that contains the item.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_olist__orders')
+                field: order_id
 
+      - name: order_item_id
+        description: Sequential identifier of the item within an order.
+        data_tests:
+          - not_null
 
+      - name: product_id
+        description: Identifier of the purchased product.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_olist__products')
+                field: product_id
 
+      - name: seller_id
+        description: Identifier of the seller that fulfilled the item.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_olist__sellers')
+                field: seller_id
+
+      - name: item_price
+        description: Product price for the order line in Brazilian reais.
+        data_tests:
+          - not_null
+
+      - name: freight_value
+        description: Freight charge for the order line in Brazilian reais.
+        data_tests:
+          - not_null
+
+  - name: stg_olist__order_payments
+    description: Cleaned Olist payment events in the Silver layer. One row represents one payment event within an order.
+
+    columns:
+      - name: payment_key
+        description: Derived unique key formed from order_id and payment_sequential.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: order_id
+        description: Identifier of the order associated with the payment.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_olist__orders')
+                field: order_id
+
+      - name: payment_sequential
+        description: Sequence number of the payment within an order.
+        data_tests:
+          - not_null
+
+      - name: payment_type
+        description: Standardized payment method.
+        data_tests:
+          - not_null
+
+      - name: payment_installments
+        description: Number of installments selected for the payment.
+        data_tests:
+          - not_null
+
+      - name: payment_value
+        description: payment amount in Brazilian reais.
+        data_tests:
+          - not_null
+  - name: stg_olist__reviews
+    description: Cleaned Olist customer reviews in the silver layer. One row represents one review-order pair.
+
+    columns:
+      - name: review_key
+        description: Composite key made from review_id and order_id.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: review_id
+        description: Raw review identifier. It is not unique by itself in this dataset.
+        data_tests:
+          - not_null
+
+      - name: order_id
+        description: Identifier of the reviewed order.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_olist__orders')
+                field: order_id
+
+      - name: review_score
+        description: Customer rating from one to five.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1,2,3,4,5]
+
+      - name: review_comment_title
+        description: Optional customer review title. Blank values are converted to null.
+
+      - name: review_comment_message
+        description: Optional customer review message. Blank values are converted to null.
+
+      - name: review_comment_date
+        description: Timestamp when the review was created.
+
+      - name: review_comment_timestamp
+        description: Timestamp when the seller answered the review.
+
+  - name: stg_olist__review_enrichment
+    description: AI-enriched review sample in the silver layer. One row represents one review-order pair.
+
+    columns:
+      - name: review_key
+        description: Composite key made from review_id and order_id.
+        data_tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('stg_olist__reviews')
+                field: review_key
+
+      - name: review_id
+        description: Raw review identifier.
+        data_tests:
+          - not_null
+
+      - name: order_id
+        description: Identifier of the reviewed order.
+        data_tests:
+          - not_null
+
+      - name: review_score
+        description: Customer rating from one to five.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+
+      - name: english_translation
+        description: AI-generated English translation of the Portuguese review message.
+
+      - name: review_comment_title
+        description: Optional original review title.
+
+      - name: review_comment_message
+        description: Optional original review message.
+
+      - name: review_creation_date
+        description: Timestamp when the review was created.
+
+      - name: review_answer_timestamp
+        description: Timestamp when the seller answered the review.
 
 
 

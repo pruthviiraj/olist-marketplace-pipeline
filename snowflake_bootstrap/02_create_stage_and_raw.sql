@@ -147,7 +147,7 @@ ON_ERROR = 'CONTINUE';
 
 -- ==========================================
 -- 7. ORDER REVIEWS TABLE
--- Customer satisfaction and translated review text
+-- Complete raw customer-satisfaction dataset from Kaggle. The original file has 7 columns.
 -- ==========================================
 CREATE OR REPLACE TABLE order_reviews (
     review_id STRING,
@@ -162,8 +162,24 @@ CREATE OR REPLACE TABLE order_reviews (
 COPY INTO order_reviews
 FROM @my_azure_stage/olist_order_reviews_dataset.csv
 FILE_FORMAT = csv_raw_format
-ON_ERROR = 'CONTINUE';
+ON_ERROR = 'ABORT_STATEMENT';
 
+-- AI-enriched sample: original review fields plus English translation
+CREATE OR REPLACE TABLE order_reviews_ai_enrichment_sample (
+    review_id STRING,
+    order_id STRING,
+    review_score INTEGER,
+    review_comment_title STRING,
+    review_comment_message STRING,
+    review_creation_date TIMESTAMP,
+    review_answer_timestamp TIMESTAMP,
+    english_translation STRING
+);
+
+COPY INTO order_reviews_ai_enrichment_sample
+FROM @my_azure_stage/olist_order_reviews_enriched_sample.csv
+FILE_FORMAT = csv_raw_format
+ON_ERROR = 'ABORT_STATEMENT';
 
 -- ==========================================
 -- 8. GEOLOCATION TABLE

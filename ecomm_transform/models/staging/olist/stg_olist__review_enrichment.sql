@@ -1,0 +1,21 @@
+WITH source AS (
+    SELECT *
+    FROM {{ source('olist_bronze', 'order_reviews_ai_enrichment_sample') }}
+),
+
+renamed AS (
+
+    SELECT
+        concat(review_id, '-', order_id) AS review_key,
+        review_id,
+        order_id,
+        cast(review_score AS integer) AS review_score,
+        nullif(trim(review_comment_title), '') AS review_comment_title,
+        nullif(trim(review_comment_message), '') AS review_comment_message,
+        nullif(trim(english_translation), '') AS english_translation,
+        review_creation_date,
+        review_answer_timestamp
+    FROM source
+)
+
+SELECT * FROM renamed

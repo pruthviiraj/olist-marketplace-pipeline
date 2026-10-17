@@ -10,7 +10,7 @@ from groq import Groq
 load_dotenv()
 
 # Setup & Security
-def translate_reviews_with_AI(file_path):
+def translate_reviews_with_AI(file_path, output_path, sample_size=50):
     print("Initializing Groq AI translation....")
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
     translated_rows = []
@@ -23,7 +23,7 @@ def translate_reviews_with_AI(file_path):
         # Iterator,control flow
 
         for i, row in enumerate(reader):
-            if i >= 50:
+            if i >= sample_size:
                 break
 
             review_text = row[4]
@@ -47,7 +47,7 @@ def translate_reviews_with_AI(file_path):
                 print(f"AI translation failed for row {i}: {e}")
                 translated_rows.append(row + ["Error"])
 
-    with open(file_path, mode='w', encoding='utf-8', newline='') as outfile:
+    with open(output_path, mode='w', encoding='utf-8', newline='') as outfile:
         writer = csv.writer(outfile)
         writer.writerows(translated_rows)
     print("AI Translation Complete.")
@@ -66,8 +66,14 @@ def run_extraction():
 
     # Conditional AI Trigger
     reviews_file = os.path.join(download_path, "olist_order_reviews_dataset.csv")
+    enriched_reviews_file = os.path.join(
+        download_path, "olist_order_reviews_enriched_sample.csv"
+    )
+
     if os.path.exists(reviews_file):
-        translate_reviews_with_AI(reviews_file)
+        translate_reviews_with_AI(reviews_file, enriched_reviews_file)
+
+
 
     # Cloud Loading
     print("Authenticating with Azure....")
