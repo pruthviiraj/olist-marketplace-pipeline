@@ -213,3 +213,31 @@ sources:
 
           - name: english_translation
             description: AI-generated English translation of the Portuguese review message.
+
+      - name: geolocation
+        description: Raw Olist geolocation observations. Duplicate observations may exist for the same ZIP prefix.
+        columns:
+          - name: geolocation_zip_code_prefix
+            description: ZIP-code prefix associated with the location observation.
+            data_tests:
+              - not_null
+
+          - name: geolocation_lat
+            description: Latitude of the location observation.
+            data_tests:
+              - not_null
+
+          - name: geolocation_lng
+            description: Longitude of the location observation.
+            data_tests:
+              - not_null
+
+          - name: geolocation_city
+            description: City associated with the location observation.
+            data_tests:
+              - not_null
+
+          - name: geolocation_state
+            description: State code associated with the location observation.
+            data_tests:
+              - not_null
