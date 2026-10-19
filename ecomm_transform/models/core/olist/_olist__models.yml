@@ -1,0 +1,51 @@
+version: 2
+
+models:
+  - name: core_olist__orders
+    description: >
+      one row per Olist order. Combines order lifecycle data with aggregated
+      item, payment, review, and fulfillment metrics.
+
+    columns:
+      - name: order_id
+        description: Unique identifier for an order.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        description: Customer associated with the order.
+        data_tests:
+          - not_null
+
+      - name: order_status
+        description: Current lifecycle status of the order.
+        data_tests:
+          - not_null
+
+      - name: delivery_days
+        description: Number of days from purchase until customer delivery. Null when not delivered.
+
+      - name: is_late_delivery
+        description: True when delivery occurred after the estimated delivery date. Null when lateness cannot be determined.
+
+      - name: order_item_count
+        description: Number of items in the order. Null when no matching item record exist.
+
+      - name: item_subtotal
+        description: Sum of item prices in the order.
+
+      - name: freight_total
+        description: Sum of freight charges for the order.
+
+      - name: payment_count
+        description: Number of payment records associated with the order.
+
+      - name: payment_total
+        description: Sum of payment values for the order.
+
+      - name: review_count
+        description: Number of reviews associated with the order.
+
+      - name: average_review_score
+        description: Average review score for the order, from 1 to 5.
