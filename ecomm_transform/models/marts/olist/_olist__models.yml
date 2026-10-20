@@ -1,0 +1,43 @@
+version: 2
+
+models:
+  - name: mart_olist__seller_performance
+    description: >
+      One row per seller containing seller order, item, revenue, freight,
+      delivery, and late-order metrics.
+
+    columns:
+      - name: seller_id
+        description: Unique identifier for a seller.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: seller_order_count
+        description: Number of distinct orders containing items from the seller.
+        data_tests:
+          - not_null
+
+      - name: seller_item_count
+        description: Number of item rows sold by the seller.
+        data_tests:
+          - not_null
+
+      - name: item_subtotal
+        description: Sum of item prices for the seller.
+        data_tests:
+          - not_null
+
+      - name: freight_total
+        description: Sum of freight charges for the seller.
+        data_tests:
+          - not_null
+
+      - name: delivered_order_count
+        description: Number of distinct seller-associated orders that were delivered.
+
+      - name: late_order_count
+        description: Number of distinct seller-associated orders delivered after the estimate.
+
+      - name: average_delivery_days
+        description: Average delivery duration for delivered seller-associated orders.
