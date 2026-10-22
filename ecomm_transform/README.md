@@ -8,7 +8,7 @@ For the business problem, ingestion architecture, setup prerequisites, and overa
 
 The dbt project and connection profile are named `ecomm_transform`. The `olist_bronze` source references raw tables in `ecomm_db.bronze`. Staging models are configured as views; their output schema is determined by the active dbt profile.
 
-Five staging models and their documentation and test definitions are present. Core models and Data Marts are planned. Test definitions do not establish that warehouse tests have passed.
+Ten staging models, one Core order model, and two reporting marts are implemented. The latest full `dbt build` completed with 135 passed checks, 0 warnings, and 0 errors.
 
 | Model | Purpose | Row represents |
 | --- | --- | --- |
@@ -17,8 +17,16 @@ Five staging models and their documentation and test definitions are present. Co
 | `stg_olist__sellers` | Seller identifiers and locations | One seller |
 | `stg_olist__products` | Product attributes with consistent names and integer casts | One product |
 | `stg_olist__product_category_translations` | Portuguese-to-English category mapping provided by Olist | One category mapping |
+| `stg_olist__order_items` | Order-line prices, freight, and seller relationships | One order item |
+| `stg_olist__order_payments` | Payment method, installments, and value | One order-payment sequence |
+| `stg_olist__reviews` | Customer review scores and comments | One review-order pair |
+| `stg_olist__review_enrichment` | Optional AI-generated English review translation | One review-order pair |
+| `stg_olist__geolocation` | Deduplicated geographic coordinates and labels | One observed location row |
+| `core_olist__orders` | One-row-per-order fulfillment and commercial metrics | One order |
+| `mart_olist__seller_performance` | Seller order, item, value, and delivery metrics | One seller |
+| `mart_olist__customer_experience` | Review scores, fulfillment context, and optional translation | One review-order pair |
 
-Product-category translations come from the source dataset. The AI customer-review translation prototype lives in the Python ingestion code and is not yet integrated into dbt models.
+Product-category translations come from the source dataset. The AI customer-review translation sample is loaded to Snowflake and joined into the customer-experience mart with a left join so the 50-row sample cannot remove the remaining reviews.
 
 ## Model organization
 
@@ -32,10 +40,22 @@ models/
         ├── stg_olist__customers.sql
         ├── stg_olist__sellers.sql
         ├── stg_olist__products.sql
-        └── stg_olist__product_category_translations.sql
+        ├── stg_olist__product_category_translations.sql
+        ├── stg_olist__order_items.sql
+        ├── stg_olist__order_payments.sql
+        ├── stg_olist__reviews.sql
+        ├── stg_olist__review_enrichment.sql
+        └── stg_olist__geolocation.sql
+├── core/
+│   └── olist/
+│       └── core_olist__orders.sql
+└── marts/
+    └── olist/
+        ├── mart_olist__seller_performance.sql
+        └── mart_olist__customer_experience.sql
 ```
 
-`_olist__sources.yml` declares raw tables and source tests. `_olist__models.yml` describes staging models and their tests. Staging SQL reads raw tables through `source()`; downstream models will reference dbt models through `ref()`.
+`_olist__sources.yml` declares raw tables and source tests. `_olist__models.yml` describes staging models and their tests. Staging SQL reads raw tables through `source()`; Core and mart models reference upstream dbt models through `ref()`.
 
 ## Running the project
 
@@ -53,16 +73,16 @@ Parse the project configuration without executing models in Snowflake:
 uv run dbt parse --project-dir ecomm_transform
 ```
 
-Build the staging views:
+Build the full dbt graph:
 
 ```bash
-uv run dbt run --project-dir ecomm_transform --select "path:models/staging/olist"
+uv run dbt build --project-dir ecomm_transform
 ```
 
-Run the declared staging-model tests:
+Run a focused model and its upstream dependencies:
 
 ```bash
-uv run dbt test --project-dir ecomm_transform --select "path:models/staging/olist"
+uv run dbt build --project-dir ecomm_transform --select "+core_olist__orders"
 ```
 
 Run the declared raw-source tests separately:
@@ -75,9 +95,8 @@ uv run dbt test --project-dir ecomm_transform --select "source:olist_bronze"
 
 ## Next development steps
 
-1. Correct source metadata, confirm connectivity, and verify the existing models and tests.
-2. Profile and stage the remaining order-item, payment, review, and geolocation data.
-3. Build Core models with documented row definitions and controlled joins.
-4. Build Data Marts with defined fulfillment, seller-performance, and customer-experience metrics.
+1. Add ingestion reconciliation, repeatable reruns, failure handling, and scheduling.
+2. Add Git-based checks and CI using an appropriately restricted warehouse identity.
+3. Publish a dashboard and a short case study linking business questions to validated metrics.
 
 Record actual validation results alongside future changes. See the [overall completion roadmap](../README.md#completion-roadmap) for review enrichment, pipeline reliability, automation, and dashboard work.
