@@ -41,3 +41,45 @@ models:
 
       - name: average_delivery_days
         description: Average delivery duration for delivered seller-associated orders.
+
+  - name: mart_olist__customer_experience
+    description: >
+      One row per review-order pair containing customer feedback,
+      fulfillment context, and optional AI-generated English translation.
+
+    columns:
+      - name: review_key
+        description: Composite key identifying one review-order pair.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: review_id
+        description: Review identifier. It may appear more than once across orders.
+        data_tests:
+          - not_null
+
+      - name: order_id
+        description: Order associated with the review.
+        data_tests:
+          - not_null
+
+      - name: review_score
+        description: Customer review score from 1 to 5.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+
+      - name: order_status
+        description: Order lifecycle status associated with the review.
+
+      - name: delivery_days
+        description: Days from purchase to customer delivery. Null when not delivered.
+
+      - name: is_late_delivery
+        description: True when the reviewed order was delivered after its estimate.
+
+      - name: english_translation
+        description: Optional AI-generated English translation. Only the sampled reviews may contain a value.
