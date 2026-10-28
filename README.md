@@ -51,17 +51,17 @@ The extraction script downloads the Olist dataset, creates a small AI-translated
 ## Current implementation
 
 
-| Component | Implementation |
-| --- | --- |
-| Extraction | Kaggle API download of `olistbr/brazilian-ecommerce` |
-| Cloud upload | Python upload to the Azure Blob Storage container `ecommerce-raw` |
-| Warehouse setup | Snowflake warehouse, database, Bronze schema, Azure storage integration, external stage, and CSV format |
-| Raw loading | Table definitions and `COPY INTO` statements for the Olist datasets |
-| Transformation | 10 dbt staging views, one Core order model, and two reporting marts |
-| Data quality | Required-field, uniqueness, accepted-value, relationship, and grain tests |
-| AI enrichment | Groq translation prototype processing the first 50 review rows; the result is available through the customer-experience mart |
-| Validation | Full dbt build completed with 135 passed checks, 0 warnings, and 0 errors |
-| Dependencies | Python project configuration and a `uv.lock` file for reproducible dependency resolution |
+| Component       | Implementation                                                                                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Extraction      | Kaggle API download of `olistbr/brazilian-ecommerce`                                                                                                 |
+| Cloud upload    | Python upload to the Azure Blob Storage container `ecommerce-raw`                                                                                    |
+| Warehouse setup | Snowflake warehouse, database, Bronze schema, Azure storage integration, external stage, and CSV format                                              |
+| Raw loading     | Table definitions and `COPY INTO` statements, plus a Snowflake reconciliation script that checks expected and loaded row counts for all raw datasets |
+| Transformation  | 10 dbt staging views, one Core order model, and two reporting marts                                                                                  |
+| Data quality    | Required-field, uniqueness, accepted-value, relationship, and grain tests                                                                            |
+| AI enrichment   | Groq translation prototype processing the first 50 review rows; the result is available through the customer-experience mart                         |
+| Validation      | Full dbt build completed with 135 passed checks, 0 warnings, and 0 errors                                                                            |
+| Dependencies    | Python project configuration and a `uv.lock` file for reproducible dependency resolution                                                             |
 
 ## Repository structure
 
@@ -118,7 +118,7 @@ Parsing checks project configuration; `dbt debug`, `dbt run`, and `dbt test` req
 ## Current limitations
 
 - The AI translation prototype processes only the first 50 review rows; blank review comments remain untranslated.
-- Raw-loading statements use `ON_ERROR = 'CONTINUE'` for some datasets, so load errors and source-to-target counts require reconciliation.
+- Raw-load reconciliation currently requires manually running `snowflake_bootstrap/03_reconcile_raw_loads.sql` and uses fixed expected source counts; automated run logging, retry handling, and scheduling remain planned.
 - The source is a historical public dataset, so the project does not yet demonstrate a production SLA or continuously arriving data.
 - Dashboard publication, scheduling, automated retries, and CI checks are not yet implemented.
 
@@ -127,7 +127,7 @@ Parsing checks project configuration; `dbt debug`, `dbt run`, and `dbt test` req
 1. Preserve full raw reviews, store translations separately, and integrate enrichment into Snowflake with quality and cost tracking. **Complete.**
 2. Complete staging models for order items, payments, reviews, and geolocation; correct source definitions and verify warehouse tests. **Complete.**
 3. Build core and reporting models with documented grains and metrics. Avoid inflating order counts or amounts when joining order items, payments, and reviews. **Complete.**
-4. Add ingestion reconciliation, repeatable reruns, failure handling, and scheduling. Since the source is a historical dataset, demonstrate incremental processing through clearly labeled simulations if added.
+4. Extend the implemented raw row-count reconciliation with repeatable reruns, failure handling, automated run logging, and scheduling. Since the source is a historical dataset, demonstrate incremental processing through clearly labeled simulations if added.
 5. Add Git-based checks and continuous integration, with warehouse checks using an appropriately restricted identity.
 6. Publish a dashboard and a short case study linking business questions to model definitions, findings, and supported recommendations.
 
