@@ -10,6 +10,8 @@ venv/
 kaggle.json
 .kaggle/
 profiles.yml
+.dbt-ci/.user.yml
+!.dbt-ci/profiles.yml
 *.pem
 *.p8
 *.key

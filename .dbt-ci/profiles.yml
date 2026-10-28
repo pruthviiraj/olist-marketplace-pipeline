@@ -1,0 +1,14 @@
+ecomm_transform:
+  target: ci
+
+  outputs:
+    ci:
+      type: snowflake
+      account: ci-account
+      user: ci-user
+      password: ci-password
+      role: ci-role
+      database: ci_database
+      warehouse: ci_warehouse
+      schema: ci_schema
+      threads: 1
