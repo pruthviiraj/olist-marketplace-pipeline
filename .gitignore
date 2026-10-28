@@ -35,3 +35,9 @@ dbt_internal_packages/
 .ruff_cache/
 .coverage
 htmlcov/
+
+# Commit the placeholder-only dbt profile used by GitHub Actions.
+!.github/dbt/profiles.yml
+
+# Local dbt extension metadata.
+.github/dbt/.user.yml
