@@ -6,7 +6,7 @@
 
 A data engineering portfolio project that extracts Olist marketplace data, uploads it to Azure Blob Storage, and prepares it for analysis in Snowflake using SQL and dbt. An AI-assisted translation prototype explores making Portuguese customer reviews accessible to English-speaking analysts.
 
-**Project status:** Ingestion, Snowflake Bronze loading, 10 dbt staging views, one Core order model, and two reporting marts are implemented. The full dbt graph has passed 135 checks. Dashboard publication, CI automation, and scheduled production operation remain planned.
+**Project status:** Ingestion, Snowflake Bronze loading, 10 dbt staging views, one Core order model, two reporting marts, raw-load reconciliation, and a local validation command are implemented. The full dbt graph has passed 135 checks. Dashboard publication and scheduled production operation remain planned.
 
 ## Business problem
 
@@ -60,7 +60,7 @@ The extraction script downloads the Olist dataset, creates a small AI-translated
 | Transformation  | 10 dbt staging views, one Core order model, and two reporting marts                                                                                  |
 | Data quality    | Required-field, uniqueness, accepted-value, relationship, and grain tests                                                                            |
 | AI enrichment   | Groq translation prototype processing the first 50 review rows; the result is available through the customer-experience mart                         |
-| Validation      | Full dbt build completed with 135 passed checks, 0 warnings, and 0 errors                                                                            |
+| Validation      | Full dbt build completed with 135 passed checks, plus a local command for Python syntax, dbt parsing, and Git whitespace validation                     |
 | Dependencies    | Python project configuration and a `uv.lock` file for reproducible dependency resolution                                                             |
 
 ## Repository structure
@@ -78,7 +78,10 @@ The extraction script downloads the Olist dataset, creates a small AI-translated
 │   └── extract_kaggle.py         # Kaggle extraction, translation, and Azure upload
 ├── snowflake_bootstrap/
 │   ├── 01_setup_infrastructure.sql
-│   └── 02_create_stage_and_raw.sql
+│   ├── 02_create_stage_and_raw.sql
+│   └── 03_reconcile_raw_loads.sql
+├── scripts/
+│   └── validate.sh                # Local pre-commit validation command
 └── ecomm_transform/
     ├── dbt_project.yml
     └── models/
@@ -120,7 +123,7 @@ Parsing checks project configuration; `dbt debug`, `dbt run`, and `dbt test` req
 - The AI translation prototype processes only the first 50 review rows; blank review comments remain untranslated.
 - Raw-load reconciliation currently requires manually running `snowflake_bootstrap/03_reconcile_raw_loads.sql` and uses fixed expected source counts; automated run logging, retry handling, and scheduling remain planned.
 - The source is a historical public dataset, so the project does not yet demonstrate a production SLA or continuously arriving data.
-- Dashboard publication, scheduling, automated retries, and CI checks are not yet implemented.
+- GitHub-hosted CI is not enabled for this account; local validation is available through `scripts/validate.sh`.
 
 ## Completion roadmap
 
@@ -128,7 +131,7 @@ Parsing checks project configuration; `dbt debug`, `dbt run`, and `dbt test` req
 2. Complete staging models for order items, payments, reviews, and geolocation; correct source definitions and verify warehouse tests. **Complete.**
 3. Build core and reporting models with documented grains and metrics. Avoid inflating order counts or amounts when joining order items, payments, and reviews. **Complete.**
 4. Extend the implemented raw row-count reconciliation with repeatable reruns, failure handling, automated run logging, and scheduling. Since the source is a historical dataset, demonstrate incremental processing through clearly labeled simulations if added.
-5. Add Git-based checks and continuous integration, with warehouse checks using an appropriately restricted identity.
+5. Keep local Git and dbt validation in the development workflow; add hosted continuous integration later if an appropriate runner/account is available.
 6. Publish a dashboard and a short case study linking business questions to model definitions, findings, and supported recommendations.
 
 ## Dataset and attribution
